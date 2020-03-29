@@ -4,11 +4,20 @@ from Helpers.Tile import *
 
 
 def main():
+    # Generate the fountain
     fountain = Fountain()
     fountain.generate_fountain()
+
+    # Spawn Tilly
     tilly = Tilly()
-    while True:
-        # tilly.move_tilly()
-        i = 0
+    tilly.spawn_tilly()
+
+    # Listen for any movements
+    turtle.listen()
+    turtle.onkey(tilly.move_up, 'Up')
+    turtle.onkey(tilly.move_down, 'Down')
+    turtle.onkey(tilly.move_left, 'Left')
+    turtle.onkey(tilly.move_right, 'Right')
+    turtle.mainloop()
 
 main()

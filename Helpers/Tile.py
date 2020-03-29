@@ -1,9 +1,9 @@
 import turtle
 
+# Constants
 CRACKED_TILE = "./images/cracked_tile.gif"
 REGULAR_TILE = "./images/regular_tile.gif"
-TILE_OFFSET = 25
-TILE_BUILD_SPEED = 10
+TILE_BUILD_SPEED = 0
 
 
 class Tile:
@@ -18,4 +18,4 @@ class Tile:
         self.tile.penup()
         self.tile.speed(TILE_BUILD_SPEED)
         self.tile.shape(tile_type)
-        self.tile.setpos((x + TILE_OFFSET, y + TILE_OFFSET))
+        self.tile.setpos((x, y))
