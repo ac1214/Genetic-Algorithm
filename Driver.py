@@ -1,6 +1,6 @@
-from Helpers.Fountain import *
-from Helpers.Tilly import *
-from Helpers.Tile import *
+from EnvironmentHelpers.Fountain import *
+from EnvironmentHelpers.Tilly import *
+from EnvironmentHelpers.Tile import *
 
 
 def main():
@@ -9,15 +9,9 @@ def main():
     fountain.generate_fountain()
 
     # Spawn Tilly
-    tilly = Tilly()
+    tilly = Tilly(fountain)
     tilly.spawn_tilly()
 
-    # Listen for any movements
-    turtle.listen()
-    turtle.onkey(tilly.move_up, 'Up')
-    turtle.onkey(tilly.move_down, 'Down')
-    turtle.onkey(tilly.move_left, 'Left')
-    turtle.onkey(tilly.move_right, 'Right')
     turtle.mainloop()
 
 main()
