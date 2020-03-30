@@ -22,6 +22,7 @@ class Tilly:
         turtle.onkeypress(self.move_left, 'Left')
         turtle.onkeypress(self.move_right, 'Right')
         turtle.onkeypress(self.fix_current_tile, 'f')
+        turtle.onkeypress(self.get_nearest_neighbors, 'g')
         turtle.listen()
 
     # Getters/Setters
@@ -61,6 +62,53 @@ class Tilly:
         tile_type = tile.get_tile_type()
         if tile_type is CRACKED_TILE:
             tile.fix_tile()
+
+    def get_nearest_neighbors(self):
+        """
+        Returns an array of the nearest neighbors as strings (cracked, regular, OOB)
+
+        :return: [North, East, South, West, Below]
+        """
+        current_x, current_y = self.get_current_pos()
+
+        neighor_arr = []
+        # North
+        try:
+            tile_type = self.fountain.get_tile(current_x, current_y + TILE_LENGTH).get_tile_type()
+            neighor_arr.append(tile_type)
+        except KeyError as e:
+            neighor_arr.append("OOB")
+
+        # East
+        try:
+            tile_type = self.fountain.get_tile(current_x + TILE_LENGTH, current_y).get_tile_type()
+            neighor_arr.append(tile_type)
+        except KeyError as e:
+            neighor_arr.append("OOB")
+
+        # South
+        try:
+            tile_type = self.fountain.get_tile(current_x, current_y - TILE_LENGTH).get_tile_type()
+            neighor_arr.append(tile_type)
+        except KeyError as e:
+            neighor_arr.append("OOB")
+
+        # West
+        try:
+            tile_type = self.fountain.get_tile(current_x - TILE_LENGTH, current_y).get_tile_type()
+            neighor_arr.append(tile_type)
+        except KeyError as e:
+            neighor_arr.append("OOB")
+
+        # Below
+        try:
+            tile_type = self.fountain.get_tile(current_x, current_y).get_tile_type()
+            neighor_arr.append(tile_type)
+        except KeyError as e:
+            neighor_arr.append("OOB")
+
+        print(neighor_arr)
+        return neighor_arr
 
     def round_int(self, number, base=25):
         return base * round(number / base)
