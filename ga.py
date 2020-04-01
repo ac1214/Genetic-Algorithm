@@ -2,20 +2,22 @@
 # This is the genetic algortihm for tilly
 # James Peralta, Albert Choi, Nathaniel Habtegergesa
 # March 2020
-
 import random
+import numpy as np
+# import EnvironmentHelpers.
 
 # Global Variables
 mutationRate = 0.3
 mutationRadius = 3
 nGenerations = 500
 rouletteFactor = 0.6
-structuresPerGeneration = 500
+structures_per_generation = 50
 
 
 class Enviroment:
     # 0 - not broken
     # 1 - broken
+    # 2 - falls off edge
     def __init__(self):
         self.world = []
         for i in range(10):
@@ -24,65 +26,56 @@ class Enviroment:
                 temp.append(random.randint(0, 1))
             self.world.append(temp)
 
-    def getIndex(self, x, y, tempWorld):
-        # north = 2 if x == 0 else world[x - 1][y]
-        # east = 2 if y == 9 else world[x][y + 1]
-        # south = 2 if x == 9 else world[x + 1][y]
-        # west = 2 if y == 0 else world[x][y - 1]
-        # center = world[x][y]
-        if x == 0:
-            north = 2
-        else:
-            north = tempWorld[x - 1][y]
-        
-        if y == 9:
-            east = 2
-        else:
-            east = tempWorld[x][y + 1]
-        
-        if(x == 9):
-            south = 2
-        else:
-            south = tempWorld[x + 1][y]
-        
-        if(y == 0):
-            west = 2
-        else:
-            west = tempWorld[x][y - 1]
-        
-        center = tempWorld[x][y]
+    def initalize_phenotype(self):
+        comb_arr = []
+        for i in range(0, 5):
+            comb_arr.append(np.arange(3))
 
-        temp = north * (3**4)
-        temp += east * (3**3)
-        temp += south * (3**2)
-        temp += west * 3
-        temp += center
+        all_combs = list(np.array(np.meshgrid(
+            comb_arr[0], comb_arr[1], comb_arr[2], comb_arr[3], comb_arr[4])).T.reshape(-1, 5))
+        all_combs = list(map(lambda x: list(x), all_combs))
+        all_combs = list(map(lambda x: "".join(map(str, x)), all_combs))
 
-        return 123
+        action_map = dict.fromkeys(all_combs)
 
-    # def getAction(self, surroundings):
-    #     return 1
+        print(action_map)
+        return action_map
 
-    # Evaluate Cost and Profits
+    def configure_phenotype(self, phenotype, genome):
+        for index, state in enumerate(phenotype.keys()):
+            phenotype[state] = genome[index]
+
+        return phenotype
+
+    def get_neighbors(self, x, y, tempWorld):
+        north = 2 if x == 0 else world[x - 1][y]
+        east = 2 if y == 9 else world[x][y + 1]
+        south = 2 if x == 9 else world[x + 1][y]
+        west = 2 if y == 0 else world[x][y - 1]
+        center = world[x][y]
+
+        n = [north, east, south, west, center]
+        s = ""
+        neigh = s.join(n)
+
+        return neigh
+
     def evaluate(self, struct):
         # iterate over 200 energy
         tempWorld = list(self.world)
-        x = 0
-        y = 0
+        x, y = 0
         struct.earnings = 0
-        moves = []
-        #print(struct.genome)
-        for i in range(200):
-            action = struct.getMove(self.getIndex(x, y, tempWorld))
-            #print("x: ", x, " y: ",  y, " action ", action)
-            #action = struct.getMove(random.randint(0, 200))
-            moves.append(action)
 
+        for i in range(200):
+            action = struct.phenotype(self.get_neighbors(x, y, tempWorld))
+            #print("x: ", x, " y: ",  y, " action ", action)
+            # neigh = get_neighbors(x, y, tempWorld)
+            # action = getAction(neigh)
 
             if action == 0:
                 x -= 1
                 if(x < 0):
-                    struct.earnings -= 5
+                    struct.earnings -= 5  # remove magic numbers
                     x = 0
             elif action == 1:
                 x += 1
@@ -112,8 +105,9 @@ class Enviroment:
                 # x += random.randint(0, 1)
                 # y += random.randint(0, 1)
             # print("action: ", action, "", "Earnings", struct.earnings)
-        #print(moves)
-            
+        # print(moves)
+
+
 class Structure:
     def __init__(self, actions):
         self.earnings = 0
@@ -141,14 +135,14 @@ class Structure:
 
     def mutate(self):
         for i in range(len(self.genome)):
-            val = random.uniform(0, 1);
+            val = random.uniform(0, 1)
             if(val < mutationRate):
                 radius = random.randint(1, mutationRadius)
                 self.genome[i] = (self.genome[i] + radius) % 7
 
 
 class GenePool:
-    def __init__(self,structures, numStructs, world):
+    def __init__(self, structures, numStructs, world):
         self.pool = structures[:]
         self.poolSize = numStructs
         self.environment = world
@@ -157,18 +151,18 @@ class GenePool:
                 self.pool.append(Structure([]))
 
         self.weights = [1]
-        
-        for i in range(1,self.poolSize):
+
+        for i in range(1, self.poolSize):
             self.weights.append(self.weights[i-1] * rouletteFactor)
         self.best = self.test()
 
-    def selectStructures(self,num=2):
-        return random.choices(self.pool,self.weights,k=num)
+    def selectStructures(self, num=2):
+        return random.choices(self.pool, self.weights, k=num)
 
     def test(self):
         for struct in self.pool:
             self.environment.evaluate(struct)
-        self.pool.sort(key = lambda x: x.earnings)
+        self.pool.sort(key=lambda x: x.earnings)
         return self.pool[len(self.pool) - 1]
 
     def nextGen(self):
@@ -183,10 +177,11 @@ class GenePool:
 
 def main():
     env = Enviroment()
-    pool = GenePool([], structuresPerGeneration, env)
+    pool = GenePool([], structures_per_generation, env)
     for gen in range(nGenerations):
         print("Generation: ", gen, "  best earnings score: ", pool.best.earnings)
         print(pool.best.genome)
         pool = pool.nextGen()
+
 
 main()
