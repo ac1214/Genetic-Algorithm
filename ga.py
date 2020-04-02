@@ -9,9 +9,9 @@ import random
 # Global Variables
 mutationRate = 0.1
 mutationRadius = 3
-nGenerations = 500
-rouletteFactor = 0.5
-structures_per_generation = 1000
+nGenerations = 1
+rouletteFactor = 0.6
+structures_per_generation = 3
 
 
 class Enviroment:
@@ -154,7 +154,11 @@ class GenePool:
         self.best = self.test()
 
     def selectStructures(self, num=2):
-        return random.choices(self.pool, self.weights, k=num)
+        print(self.pool)
+        print(self.weights)
+        temp = random.choices(self.pool, self.weights, k=num)
+        print(temp)
+        return temp
 
     def test(self):
         for struct in self.pool:
@@ -165,7 +169,7 @@ class GenePool:
     def nextGen(self):
         newPool = []
         for _ in range(self.poolSize):
-            parents = self.selectStructures(100)
+            parents = self.selectStructures()
             child = parents[0].crossover(parents[1])
             child.mutate()
 
