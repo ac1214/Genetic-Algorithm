@@ -2,11 +2,17 @@ from EnvironmentHelpers.Fountain import *
 
 TILLY_SPEED = 0
 
+state_to_int = {
+    "regular": 0,
+    "cracked": 1
+}
+
 
 class Tilly:
     """
     This class represents Tilly.
     """
+
     def __init__(self, fountain):
         self.tilly = turtle.Turtle()
         self.tilly.speed(TILLY_SPEED)
@@ -74,40 +80,51 @@ class Tilly:
         neighor_arr = []
         # North
         try:
-            tile_type = self.fountain.get_tile(current_x, current_y + TILE_LENGTH).get_tile_type()
-            neighor_arr.append(tile_type)
+            tile_type = self.fountain.get_tile(
+                current_x, current_y + TILE_LENGTH).get_tile_type()
+            north = state_to_int[tile_type]
         except KeyError as e:
-            neighor_arr.append("OOB")
+            north = 2
 
         # East
         try:
-            tile_type = self.fountain.get_tile(current_x + TILE_LENGTH, current_y).get_tile_type()
-            neighor_arr.append(tile_type)
+            tile_type = self.fountain.get_tile(
+                current_x + TILE_LENGTH, current_y).get_tile_type()
+            east = state_to_int[tile_type]
         except KeyError as e:
-            neighor_arr.append("OOB")
+            east = 2
 
         # South
         try:
-            tile_type = self.fountain.get_tile(current_x, current_y - TILE_LENGTH).get_tile_type()
-            neighor_arr.append(tile_type)
+            tile_type = self.fountain.get_tile(
+                current_x, current_y - TILE_LENGTH).get_tile_type()
+            south = state_to_int[tile_type]
         except KeyError as e:
-            neighor_arr.append("OOB")
+            south = 2
 
         # West
         try:
-            tile_type = self.fountain.get_tile(current_x - TILE_LENGTH, current_y).get_tile_type()
-            neighor_arr.append(tile_type)
+            tile_type = self.fountain.get_tile(
+                current_x - TILE_LENGTH, current_y).get_tile_type()
+            west = state_to_int[tile_type]
         except KeyError as e:
-            neighor_arr.append("OOB")
+            west = 2
 
         # Below
         try:
-            tile_type = self.fountain.get_tile(current_x, current_y).get_tile_type()
-            neighor_arr.append(tile_type)
+            tile_type = self.fountain.get_tile(
+                current_x, current_y).get_tile_type()
+            center = state_to_int[tile_type]
         except KeyError as e:
-            neighor_arr.append("OOB")
+            center = 2
 
-        print(neighor_arr)
+        temp = north * (3**4)
+        temp += east * (3**3)
+        temp += south * (3**2)
+        temp += west * 3
+        temp += center
+
+        print(temp)
         return neighor_arr
 
     def round_int(self, number, base=25):

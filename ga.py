@@ -36,6 +36,8 @@ class Enviroment:
         west = 2 if y == 0 else world[x][y - 1]
         center = world[x][y]
 
+        # [North, East, South, West, Below]
+
         temp = north * (3**4)
         temp += east * (3**3)
         temp += south * (3**2)
