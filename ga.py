@@ -9,7 +9,7 @@ import copy
 
 # Global Variables
 mutationRate = 0.1
-mutationRadius = 3
+mutationRadius = 5
 nGenerations = 500
 rouletteFactor = 0.6
 structures_per_generation = 1000
@@ -20,13 +20,18 @@ class Enviroment:
     # 1 - broken
     # 2 - falls off edge
     def __init__(self):
-        self.world = []
+        self.generate_new_world()
+
+    def generate_new_world(self):
+        new_world = []
         for i in range(10):
             temp = []
             for j in range(10):
                 temp.append(random.randint(0, 1))
             # print(temp)
-            self.world.append(temp)
+            new_world.append(temp)
+
+        self.world = copy.deepcopy(new_world)
 
     def getIndex(self, x, y, world):
         # print("x: ", x, " y: ", y)
@@ -159,7 +164,7 @@ class GenePool:
     def __init__(self, structures, numStructs, world):
         self.pool = structures[:]
         self.poolSize = numStructs
-        self.environment = world
+        self.environment = world  # Create new world ?
         if self.pool == []:
             for _ in range(self.poolSize):
                 self.pool.append(Structure([]))
@@ -185,11 +190,12 @@ class GenePool:
     def nextGen(self):
         newPool = []
         for _ in range(self.poolSize):
-            parents = self.selectStructures()
+            parents = self.selectStructures(300)
             child = parents[0].crossover(parents[1])
             child.mutate()
 
             newPool.append(child)
+        self.environment.generate_new_world()
         return GenePool(newPool, self.poolSize, self.environment)
 
 
