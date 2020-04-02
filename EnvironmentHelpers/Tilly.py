@@ -124,7 +124,7 @@ class Tilly:
         temp += west * 3
         temp += center
 
-        print(temp)
+        print("".join(map(str, [north, east, south, west, center])))
         return neighor_arr
 
     def round_int(self, number, base=25):
