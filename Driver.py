@@ -26,7 +26,7 @@ def main():
     tilly.spawn_tilly()
 
     for i in range(max_moves):
-        time.sleep(2)
+        time.sleep(0.5)
         tilly.make_move()
 
     turtle.mainloop()

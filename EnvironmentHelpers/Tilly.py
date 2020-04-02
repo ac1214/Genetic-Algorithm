@@ -54,16 +54,10 @@ class Tilly:
         self.tilly.setpos(TOP_LEFT)
 
     def move_up(self):
-        self.current_x -= 1
-        if(current_x < 0):
-            # earnings -= 5
-            pass
-        else:
-            self.tilly.setheading(90)
-            self.tilly.forward(TILE_LENGTH)
+        self.tilly.setheading(90)
+        self.tilly.forward(TILE_LENGTH)
 
     def move_down(self):
-        self.current_x += 1
         self.tilly.setheading(270)
         self.tilly.forward(TILE_LENGTH)
 
@@ -91,14 +85,7 @@ class Tilly:
     def make_move(self):
         move_to_make = self.get_nearest_neighbors()
 
-        # MOVE_UP = 0
-        # MOVE_DOWN = 1
-        # MOVE_LEFT = 2
-        # MOVE_RIGHT = 3
-        # MAKE_FIX = 4
-        # DO_NOTHING = 5
-        # MOVE_RANDOM = 6
-
+        print(move_to_make)
         if move_to_make == MOVE_UP:
             self.move_up()
         elif move_to_make == MOVE_DOWN:
@@ -172,7 +159,7 @@ class Tilly:
         temp += west * 3
         temp += center
 
-        print("".join(map(str, [north, east, south, west, center])))
+        # print("".join(map(str, [north, east, south, west, center])))
         return BEST_ARRAY[temp]
 
     def round_int(self, number, base=25):
