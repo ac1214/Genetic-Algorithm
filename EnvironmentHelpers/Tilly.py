@@ -54,10 +54,16 @@ class Tilly:
         self.tilly.setpos(TOP_LEFT)
 
     def move_up(self):
-        self.tilly.setheading(90)
-        self.tilly.forward(TILE_LENGTH)
+        self.current_x -= 1
+        if(current_x < 0):
+            # earnings -= 5
+            pass
+        else:
+            self.tilly.setheading(90)
+            self.tilly.forward(TILE_LENGTH)
 
     def move_down(self):
+        self.current_x += 1
         self.tilly.setheading(270)
         self.tilly.forward(TILE_LENGTH)
 
@@ -167,7 +173,7 @@ class Tilly:
         temp += center
 
         print("".join(map(str, [north, east, south, west, center])))
-        return temp
+        return BEST_ARRAY[temp]
 
     def round_int(self, number, base=25):
         return base * round(number / base)
