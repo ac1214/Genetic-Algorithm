@@ -3,15 +3,15 @@
 # James Peralta, Albert Choi, Nathaniel Habtegergesa
 # March 2020
 import random
-import numpy as np
+# import numpy as np
 # import EnvironmentHelpers.
 
 # Global Variables
-mutationRate = 0.3
-mutationRadius = 3
+mutationRate = 0.1
+mutationRadius = 1
 nGenerations = 500
-rouletteFactor = 0.6
-structures_per_generation = 50
+rouletteFactor = 0.8
+structures_per_generation = 1000
 
 
 class Enviroment:
@@ -24,51 +24,37 @@ class Enviroment:
             temp = []
             for j in range(10):
                 temp.append(random.randint(0, 1))
+            # print(temp)
             self.world.append(temp)
 
-    def initalize_phenotype(self):
-        comb_arr = []
-        for i in range(0, 5):
-            comb_arr.append(np.arange(3))
-
-        all_combs = list(np.array(np.meshgrid(
-            comb_arr[0], comb_arr[1], comb_arr[2], comb_arr[3], comb_arr[4])).T.reshape(-1, 5))
-        all_combs = list(map(lambda x: list(x), all_combs))
-        all_combs = list(map(lambda x: "".join(map(str, x)), all_combs))
-
-        action_map = dict.fromkeys(all_combs)
-
-        print(action_map)
-        return action_map
-
-    def configure_phenotype(self, phenotype, genome):
-        for index, state in enumerate(phenotype.keys()):
-            phenotype[state] = genome[index]
-
-        return phenotype
-
-    def get_neighbors(self, x, y, tempWorld):
+    def getIndex(self, x, y, world):
+        # print("x: ", x, " y: ", y)
         north = 2 if x == 0 else world[x - 1][y]
         east = 2 if y == 9 else world[x][y + 1]
         south = 2 if x == 9 else world[x + 1][y]
         west = 2 if y == 0 else world[x][y - 1]
         center = world[x][y]
 
-        n = [north, east, south, west, center]
-        s = ""
-        neigh = s.join(n)
-
-        return neigh
+        temp = north * (3**4)
+        temp += east * (3**3)
+        temp += south * (3**2)
+        temp += west * 3
+        temp += center
+        return temp
 
     def evaluate(self, struct):
         # iterate over 200 energy
         tempWorld = list(self.world)
-        x, y = 0
+
+        x, y = 0, 0
+
         struct.earnings = 0
 
-        for i in range(200):
-            action = struct.phenotype(self.get_neighbors(x, y, tempWorld))
-            #print("x: ", x, " y: ",  y, " action ", action)
+        for i in range(1):
+            # action = struct.phenotype(self.get_neighbors(x, y, tempWorld))
+            action = struct.getMove(self.getIndex(x, y, tempWorld))
+            # print(struct.genome)
+            print("x: ", x, " y: ",  y, " action ", action)
             # neigh = get_neighbors(x, y, tempWorld)
             # action = getAction(neigh)
 
@@ -96,14 +82,23 @@ class Enviroment:
                 if(tempWorld[x][y] == 0):
                     struct.earnings -= 1
                 else:
-                    tempWorld[x][y] = 1
+                    tempWorld[x][y] = 0
                     struct.earnings += 10
             elif action == 5:
                 pass
             else:
-                pass
-                # x += random.randint(0, 1)
-                # y += random.randint(0, 1)
+                choice = random.randint(0, 1)
+                if(choice == 0):
+                    move = random.randint(-1, 1)
+                    newX = x + move
+                    if(newX >= 0 and newX < 10):
+                        x = newX
+                else:
+                    move = random.randint(-1, 1)
+                    newY = y + move
+                    if(newY >= 0 and newY < 10):
+                        y = newY
+
             # print("action: ", action, "", "Earnings", struct.earnings)
         # print(moves)
 
@@ -113,7 +108,7 @@ class Structure:
         self.earnings = 0
         self.genome = actions[:]
 
-        if(self.genome == []):
+        if(len(self.genome) == 0):
             self.genome = list()
             for i in range(243):
                 self.genome.append(random.randint(0, 6))
@@ -153,17 +148,17 @@ class GenePool:
         self.weights = [1]
 
         for i in range(1, self.poolSize):
-            self.weights.append(self.weights[i-1] * rouletteFactor)
+            self.weights.append(self.weights[i - 1] * rouletteFactor)
         self.best = self.test()
 
     def selectStructures(self, num=2):
-        return random.choices(self.pool, self.weights, k=num)
+        return random.sample(self.pool, k=num)
 
     def test(self):
         for struct in self.pool:
             self.environment.evaluate(struct)
-        self.pool.sort(key=lambda x: x.earnings)
-        return self.pool[len(self.pool) - 1]
+        self.pool.sort(key=lambda x: x.earnings, reverse=True)
+        return self.pool[0]
 
     def nextGen(self):
         newPool = []
@@ -171,7 +166,9 @@ class GenePool:
             parents = self.selectStructures()
             child = parents[0].crossover(parents[1])
             child.mutate()
+
             newPool.append(child)
+            self.environment = Enviroment()
         return GenePool(newPool, self.poolSize, self.environment)
 
 
