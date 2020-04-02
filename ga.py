@@ -49,6 +49,8 @@ class Enviroment:
         x, y = 0, 0
 
         struct.earnings = 0
+        pheno = self.configure_phenotype(
+            self.initalize_phenotype(), struct.genome)
 
         for i in range(1):
             # action = struct.phenotype(self.get_neighbors(x, y, tempWorld))
