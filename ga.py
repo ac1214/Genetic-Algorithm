@@ -3,15 +3,16 @@
 # James Peralta, Albert Choi, Nathaniel Habtegergesa
 # March 2020
 import random
+import copy
 # import numpy as np
 # import EnvironmentHelpers.
 
 # Global Variables
 mutationRate = 0.1
 mutationRadius = 3
-nGenerations = 1
+nGenerations = 500
 rouletteFactor = 0.6
-structures_per_generation = 3
+structures_per_generation = 1000
 
 
 class Enviroment:
@@ -44,7 +45,7 @@ class Enviroment:
 
     def evaluate(self, struct):
         # iterate over 200 energy
-        tempWorld = list(self.world)
+        tempWorld = copy.deepcopy(self.world)
 
         x, y = 0, 0
 
@@ -134,7 +135,7 @@ class Structure:
         for i in range(len(self.genome)):
             val = random.uniform(0, 1)
             if(val < mutationRate):
-                radius = random.randint(1, mutationRadius)
+                radius = random.randint(-mutationRadius, mutationRadius)
                 self.genome[i] = (self.genome[i] + radius) % 7
 
 
@@ -154,16 +155,15 @@ class GenePool:
         self.best = self.test()
 
     def selectStructures(self, num=2):
-        print(self.pool)
-        print(self.weights)
-        temp = random.choices(self.pool, self.weights, k=num)
-        print(temp)
-        return temp
+        return random.choices(self.pool, self.weights, k=num)
 
     def test(self):
         for struct in self.pool:
             self.environment.evaluate(struct)
         self.pool.sort(key=lambda x: x.earnings, reverse=True)
+        # print(self.weights)
+        # print([struct.earnings for struct in self.pool])
+
         return self.pool[0]
 
     def nextGen(self):
@@ -174,7 +174,6 @@ class GenePool:
             child.mutate()
 
             newPool.append(child)
-            # self.environment = Enviroment()
         return GenePool(newPool, self.poolSize, self.environment)
 
 
