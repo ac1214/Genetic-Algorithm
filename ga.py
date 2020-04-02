@@ -92,17 +92,31 @@ class Enviroment:
             elif action == 5:
                 pass
             else:
-                choice = random.randint(0, 1)
-                if(choice == 0):
-                    move = random.randint(-1, 1)
-                    newX = x + move
-                    if(newX >= 0 and newX < 10):
-                        x = newX
+                choice = random.choice([True, False])
+                if(choice):
+                    choice = random.choice([True, False])
+                    if(choice):
+                        x -= 1
+                        if(x < 0):
+                            struct.earnings -= 5  # remove magic numbers
+                            x = 0
+                    else:
+                        x += 1
+                        if(x > 9):
+                            struct.earnings -= 5
+                            x = 9
                 else:
-                    move = random.randint(-1, 1)
-                    newY = y + move
-                    if(newY >= 0 and newY < 10):
-                        y = newY
+                    choice = random.choice([True, False])
+                    if(choice):
+                        y -= 1
+                        if(y < 0):
+                            struct.earnings -= 5  # remove magic numbers
+                            y = 0
+                    else:
+                        y += 1
+                        if(y > 9):
+                            struct.earnings -= 5
+                            y = 9
 
             # print("action: ", action, "", "Earnings", struct.earnings)
         # print(moves)

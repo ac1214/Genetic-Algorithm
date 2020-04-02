@@ -4,6 +4,7 @@ from EnvironmentHelpers.Tilly import *
 from EnvironmentHelpers.Tile import *
 
 file_name = ""
+max_moves = 200
 
 
 def main():
@@ -22,6 +23,9 @@ def main():
     # Spawn Tilly
     tilly = Tilly(fountain)
     tilly.spawn_tilly()
+
+    for i in range(max_moves):
+        tilly.make_move()
 
     turtle.mainloop()
 
