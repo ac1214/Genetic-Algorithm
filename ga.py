@@ -11,7 +11,7 @@ mutationRate = 0.3
 mutationRadius = 3
 nGenerations = 500
 rouletteFactor = 0.6
-structures_per_generation = 50
+structures_per_generation = 500
 
 
 class Enviroment:
@@ -38,7 +38,6 @@ class Enviroment:
 
         action_map = dict.fromkeys(all_combs)
 
-        print(action_map)
         return action_map
 
     def configure_phenotype(self, phenotype, genome):
@@ -48,29 +47,37 @@ class Enviroment:
         return phenotype
 
     def get_neighbors(self, x, y, tempWorld):
-        north = 2 if x == 0 else world[x - 1][y]
-        east = 2 if y == 9 else world[x][y + 1]
-        south = 2 if x == 9 else world[x + 1][y]
-        west = 2 if y == 0 else world[x][y - 1]
-        center = world[x][y]
+        north = 2 if x == 0 else tempWorld[x - 1][y]
+        east = 2 if y == 9 else tempWorld[x][y + 1]
+        south = 2 if x == 9 else tempWorld[x + 1][y]
+        west = 2 if y == 0 else tempWorld[x][y - 1]
+        center = tempWorld[x][y]
 
         n = [north, east, south, west, center]
+        n = list(map(lambda x: str(x), n))
         s = ""
-        neigh = s.join(n)
 
+        neigh = s.join(n)
+        # print(neigh)
         return neigh
 
     def evaluate(self, struct):
         # iterate over 200 energy
         tempWorld = list(self.world)
-        x, y = 0
+        x = 0
+        y = 0
         struct.earnings = 0
+        pheno = self.configure_phenotype(
+            self.initalize_phenotype(), struct.genome)
 
         for i in range(200):
-            action = struct.phenotype(self.get_neighbors(x, y, tempWorld))
-            #print("x: ", x, " y: ",  y, " action ", action)
-            # neigh = get_neighbors(x, y, tempWorld)
-            # action = getAction(neigh)
+            # action = struct.getMove(self.getIndex(x, y, tempWorld))
+            # print("x: ", x, " y: ",  y, " action ", action)
+            # print(self.get_neighbors(x, y, tempWorld))
+            neigh = self.get_neighbors(x, y, tempWorld)
+            action = pheno[neigh]
+
+            # action = random.randint(0, 6)
 
             if action == 0:
                 x -= 1
