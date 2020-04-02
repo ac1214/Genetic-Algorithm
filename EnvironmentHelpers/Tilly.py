@@ -54,20 +54,40 @@ class Tilly:
         self.tilly.setpos(TOP_LEFT)
 
     def move_up(self):
-        self.tilly.setheading(90)
-        self.tilly.forward(TILE_LENGTH)
+        self.current_x -= 1
+        if(self.current_x < 0):
+            self.current_x = 0
+        else:
+            self.tilly.setheading(90)
+            self.tilly.forward(TILE_LENGTH)
 
     def move_down(self):
-        self.tilly.setheading(270)
-        self.tilly.forward(TILE_LENGTH)
+        self.current_x += 1
+
+        if(self.current_x > 9):
+            # TODO: Subtract from earnings
+            self.current_x = 9
+        else:
+            self.tilly.setheading(270)
+            self.tilly.forward(TILE_LENGTH)
 
     def move_left(self):
-        self.tilly.setheading(180)
-        self.tilly.forward(TILE_LENGTH)
+        self.current_y -= 1
+
+        if(self.current_y < 0):
+            self.current_y = 0
+        else:
+            self.tilly.setheading(180)
+            self.tilly.forward(TILE_LENGTH)
 
     def move_right(self):
-        self.tilly.setheading(0)
-        self.tilly.forward(TILE_LENGTH)
+        self.current_y += 1
+
+        if(self.current_y > 9):
+            self.current_y = 0
+        else:
+            self.tilly.setheading(0)
+            self.tilly.forward(TILE_LENGTH)
 
     def fix_current_tile(self):
         current_x, current_y = self.get_current_pos()
