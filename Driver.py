@@ -2,6 +2,7 @@ import sys
 from EnvironmentHelpers.Fountain import *
 from EnvironmentHelpers.Tilly import *
 from EnvironmentHelpers.Tile import *
+import time
 
 file_name = ""
 max_moves = 200
@@ -25,6 +26,7 @@ def main():
     tilly.spawn_tilly()
 
     for i in range(max_moves):
+        time.sleep(2)
         tilly.make_move()
 
     turtle.mainloop()
