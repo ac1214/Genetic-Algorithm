@@ -8,9 +8,9 @@ import random
 
 # Global Variables
 mutationRate = 0.1
-mutationRadius = 1
+mutationRadius = 3
 nGenerations = 500
-rouletteFactor = 0.8
+rouletteFactor = 0.5
 structures_per_generation = 1000
 
 
@@ -49,14 +49,14 @@ class Enviroment:
         x, y = 0, 0
 
         struct.earnings = 0
-        pheno = self.configure_phenotype(
-            self.initalize_phenotype(), struct.genome)
+        # pheno = self.configure_phenotype(
+        #     self.initalize_phenotype(), struct.genome)
 
-        for i in range(1):
+        for i in range(200):
             # action = struct.phenotype(self.get_neighbors(x, y, tempWorld))
             action = struct.getMove(self.getIndex(x, y, tempWorld))
             # print(struct.genome)
-            print("x: ", x, " y: ",  y, " action ", action)
+            # print("x: ", x, " y: ",  y, " action ", action)
             # neigh = get_neighbors(x, y, tempWorld)
             # action = getAction(neigh)
 
@@ -154,7 +154,7 @@ class GenePool:
         self.best = self.test()
 
     def selectStructures(self, num=2):
-        return random.sample(self.pool, k=num)
+        return random.choices(self.pool, self.weights, k=num)
 
     def test(self):
         for struct in self.pool:
@@ -165,12 +165,12 @@ class GenePool:
     def nextGen(self):
         newPool = []
         for _ in range(self.poolSize):
-            parents = self.selectStructures()
+            parents = self.selectStructures(100)
             child = parents[0].crossover(parents[1])
             child.mutate()
 
             newPool.append(child)
-            self.environment = Enviroment()
+            # self.environment = Enviroment()
         return GenePool(newPool, self.poolSize, self.environment)
 
 
