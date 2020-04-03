@@ -10,7 +10,7 @@ MUTATION_RATE = 0.05
 MUTATION_RADIUS = 5
 ROULETTE_FACTOR = 0.9
 N_GENERATIONS = 500
-STRUCTURES_PER_GENERATION = 500
+STRUCTURES_PER_GENERATION = 2000
 FOUNTAINS_PER_GENERATION = 5
 CROSSOVER_POINTS = 5
 
@@ -255,23 +255,12 @@ def main():
     pool = GenePool([], STRUCTURES_PER_GENERATION, env)
 
     first_checkpoint = False
-    second_checkpoint = False
-    third_checkpoint = False
     for gen in range(N_GENERATIONS):
         print("Generation: ", gen, "  best earnings score: ", pool.best.earnings)
 
-        if pool.best.earnings > 485 and third_checkpoint is False:
-            MUTATION_RADIUS = 1
-            MUTATION_RATE = 0.02
-            ROULETTE_FACTOR = 0.5
-            third_checkpoint = True
-        elif pool.best.earnings > 450 and second_checkpoint is False:
+        if pool.best.earnings > 450 and first_checkpoint is False:
             MUTATION_RATE = 0.03
             MUTATION_RADIUS = 2
-            second_checkpoint = True
-        elif pool.best.earnings > 400 and first_checkpoint is False:
-            MUTATION_RATE = 0.04
-            MUTATION_RADIUS = 3
             first_checkpoint = True
 
         pool = pool.next_gen()

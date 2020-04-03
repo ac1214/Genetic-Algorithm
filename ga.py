@@ -4,13 +4,14 @@
 # March 2020
 import random
 import copy
+from graphing import *
 
 # Global Variables
 mutation_rate = 0.05
 mutation_radius = 5
 roulette_factor = 0.8
-n_generations = 150
-structures_per_generation = 500
+n_generations = 10
+structures_per_generation = 10
 
 MAX_ENERGY = 200
 GENOME_LENGTH = 243
@@ -145,7 +146,6 @@ class Environment:
                                 col = RIGHT_EDGE
 
             average_earnings.append(earnings)
-        # print(average_earnings)
 
         struct.earnings = sum(average_earnings) / len(average_earnings)
 
@@ -276,8 +276,10 @@ class GenePool:
 def main():
     env = Environment()
     pool = GenePool([], structures_per_generation, env)
+    graph = Graph()
     for gen in range(n_generations):
         print("Generation: ", gen, "  best earnings score: ", pool.best.earnings)
+        graph.addNewPoint(gen, pool.best.earnings)
         print(pool.best.genome)
         global mutation_rate
         if(pool.best.earnings > 400):
@@ -296,6 +298,8 @@ def main():
     array = " ".join(map(str, pool.best.genome))
     file.write(array)
     file.close()
+
+    graph.click_to_exit()
 
 
 main()
