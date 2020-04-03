@@ -12,7 +12,7 @@ ROULETTE_FACTOR = 0.9
 N_GENERATIONS = 500
 STRUCTURES_PER_GENERATION = 500
 FOUNTAINS_PER_GENERATION = 5
-CROSSOVER_POINTS = 120
+CROSSOVER_POINTS = 5
 
 # GENOME
 MAX_ENERGY = 200
@@ -260,7 +260,7 @@ def main():
 
         pool = pool.next_gen()
 
-    file_name = "generation_" + \
+    file_name = "./best_weights/generation_" + \
         str(N_GENERATIONS) + "_fitness_score_" + \
         str(pool.best.earnings) + ".txt"
 
