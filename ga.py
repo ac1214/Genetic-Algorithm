@@ -1,5 +1,5 @@
 # ga.py
-# This is the genetic algortihm for tilly
+# This is the genetic algortihm for Tilly
 # James Peralta, Albert Choi, Nathaniel Habtegergesa
 # March 2020
 import random
@@ -9,7 +9,7 @@ import copy
 mutation_rate = 0.05
 mutation_radius = 5
 roulette_factor = 0.8
-n_generations = 500
+n_generations = 150
 structures_per_generation = 500
 
 MAX_ENERGY = 200
@@ -145,6 +145,7 @@ class Environment:
                                 col = RIGHT_EDGE
 
             average_earnings.append(earnings)
+        # print(average_earnings)
 
         struct.earnings = sum(average_earnings) / len(average_earnings)
 
@@ -206,15 +207,15 @@ class Structure:
             val = random.uniform(0, 1)
 
             if val < mutation_rate:
-                current_value = self.genome[i]
+                self.genome[i] = random.choice([0, 1, 2, 3, 4, 5, 6])
 
-                mutation = random.randint(1, mutation_radius)
+                # mutation = random.randint(1, mutation_radius)
 
-                choice = random.choice([True, False])
-                if(choice):
-                    self.genome[i] = (self.genome[i] + mutation) % 7
-                else:
-                    self.genome[i] = (self.genome[i] - mutation) % 7
+                # choice = random.choice([True, False])
+                # if(choice):
+                #     self.genome[i] = (self.genome[i] + mutation) % 7
+                # else:
+                #     self.genome[i] = (self.genome[i] - mutation) % 7
 
                 # new_point = random.randint(
                 #     current_value - mutation_radius, current_value + mutation_radius)
@@ -277,6 +278,14 @@ def main():
     pool = GenePool([], structures_per_generation, env)
     for gen in range(n_generations):
         print("Generation: ", gen, "  best earnings score: ", pool.best.earnings)
+        print(pool.best.genome)
+        global mutation_rate
+        if(pool.best.earnings > 400):
+            mutation_rate = 0.01
+        elif(pool.best.earnings > 350):
+            mutation_rate = 0.03
+        else:
+            mutation_rate = 0.05
         pool = pool.next_gen()
 
     file_name = "generation_" + \

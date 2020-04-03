@@ -4,19 +4,17 @@
 # March 2020
 import random
 import copy
-import numpy as np
-import random
 
 # Global Variables
-mutation_rate = 0.07
-mutation_radius = 3
+mutation_rate = 0.05
+mutation_radius = 5
 roulette_factor = 0.9
-n_generations = 500
+n_generations = 600
 structures_per_generation = 500
 fountains_per_generation = 5
 
 MAX_ENERGY = 200
-GENOME_LENGTH = 144
+GENOME_LENGTH = 243
 
 # State configurations
 UNBROKEN = 0
@@ -43,46 +41,6 @@ MAKE_FIX = 4
 DO_NOTHING = 5
 MOVE_RANDOM = 6
 
-# Helper functions
-
-
-def remove_oob_below(arr):
-    # Tilly	will never be on a tile that is over the edge of the grid
-    below_number = arr[4]
-
-    if below_number != 2:
-        return True
-    else:
-        return False
-
-
-def remove_more_than_two_oob(arr):
-    two_occur = arr.count(2)
-    if two_occur <= 2:
-        return True
-    else:
-        return False
-
-
-def initalize_phenotype():
-    comb_arr = []
-    for i in range(0, 5):
-        comb_arr.append(np.arange(3))
-
-    all_combs = list(np.array(np.meshgrid(
-        comb_arr[0], comb_arr[1], comb_arr[2], comb_arr[3], comb_arr[4])).T.reshape(-1, 5))
-    all_combs = list(map(lambda x: list(x), all_combs))
-    all_combs = list(filter(lambda x: remove_oob_below(x), all_combs))
-    all_combs = list(
-        filter(lambda x: remove_more_than_two_oob(x), all_combs))
-    all_combs = list(map(lambda x: "".join(map(str, x)), all_combs))
-    action_map = dict.fromkeys(all_combs)
-
-    return action_map
-
-
-phenotype_master = initalize_phenotype()
-
 
 class Environment:
     def __init__(self):
@@ -98,7 +56,7 @@ class Environment:
 
         return new_world
 
-    def get_neighbors(self, x, y, world):
+    def get_index(self, x, y, world):
         north = OOB if x == TOP_EDGE else world[x - 1][y]
         east = OOB if y == RIGHT_EDGE else world[x][y + 1]
         south = OOB if x == BOTTOM_EDGE else world[x + 1][y]
@@ -109,10 +67,12 @@ class Environment:
         #  Generates a bit string containing the index of
         #  the action in the genome depending on the current
         #  state of this structures neighbors
-        neighbors = "".join([str(north), str(east), str(
-            south), str(west), str(center)])
-
-        return neighbors  # Number between 0 and 242
+        state = north * (3**4)
+        state += east * (3**3)
+        state += south * (3**2)
+        state += west * 3
+        state += center
+        return state  # Number between 0 and 242
 
     def evaluate(self, struct):
         row, col = 0, 0
@@ -123,8 +83,7 @@ class Environment:
             earnings = 0
             temp_world = copy.deepcopy(self.generate_new_world())
             for i in range(MAX_ENERGY):
-                action = struct.get_move(
-                    self.get_neighbors(row, col, temp_world))
+                action = struct.get_move(self.get_index(row, col, temp_world))
 
                 if action == MOVE_UP:
                     row -= 1
@@ -188,7 +147,7 @@ class Environment:
 
             average_earnings.append(earnings)
 
-        struct.earnings = int(sum(average_earnings) / len(average_earnings))
+        struct.earnings = sum(average_earnings) / len(average_earnings)
 
 
 class Structure:
@@ -196,28 +155,13 @@ class Structure:
         self.earnings = 0
         self.genome = actions[:]
 
-        if(self.genome == []):
+        if self.genome == []:
             self.genome = list()
             for i in range(GENOME_LENGTH):
                 self.genome.append(random.randint(0, 6))
 
-        self.phenotype = self.configure_phenotype(
-            phenotype_master.copy(), self.genome)
-
-    def get_move(self, neighbors):
-        return self.phenotype[neighbors]
-
-    def uniform_crossover(self, mate):
-        child_genome = []
-
-        for i in range(0, GENOME_LENGTH):
-            choice = random.choice([True, False])
-            if(choice):
-                child_genome.append(self.genome[i])
-            else:
-                child_genome.append(mate.genome[i])
-
-        return Structure(child_genome)
+    def get_move(self, index):
+        return self.genome[index]
 
     def n_point_crossover(self, mate, n=2):
         child_genome = []
@@ -243,8 +187,6 @@ class Structure:
             val = random.uniform(0, 1)
 
             if val < mutation_rate:
-                current_value = self.genome[i]
-
                 mutation = random.randint(1, mutation_radius)
 
                 choice = random.choice([True, False])
@@ -252,12 +194,6 @@ class Structure:
                     self.genome[i] = (self.genome[i] + mutation) % 7
                 else:
                     self.genome[i] = (self.genome[i] - mutation) % 7
-
-    def configure_phenotype(self, phenotype, genome):
-        for index, state in enumerate(phenotype.keys()):
-            phenotype[state] = genome[index]
-
-        return phenotype
 
 
 class GenePool:
@@ -295,21 +231,38 @@ class GenePool:
             parents = self.select_structures()
             parent_zero = copy.deepcopy(parents[0])
             parent_one = copy.deepcopy(parents[1])
-            child = parent_zero.n_point_crossover(parent_one)
+            child = parent_zero.n_point_crossover(parent_one, 120)
             child.mutate()
 
             scores.append(parent_zero.earnings)
             new_pool.append(child)
 
-        new_env = Environment()
-        return GenePool(new_pool, self.pool_size, new_env)
+        return GenePool(new_pool, self.pool_size, self.environment)
 
 
 def main():
     env = Environment()
     pool = GenePool([], structures_per_generation, env)
     for gen in range(n_generations):
+        global mutation_radius
+        global mutation_rate
+        global roulette_factor
+
+        # print(mutation_radius)
         print("Generation: ", gen, "  best earnings score: ", pool.best.earnings)
+
+        print(pool.best.genome)
+        if pool.best.earnings > 485:
+            mutation_radius = 1
+            mutation_rate = 0.02
+            roulette_factor = 0.6
+        if pool.best.earnings > 450:
+            mutation_radius = 1
+            mutation_rate = 0.10
+        if pool.best.earnings > 400:
+            mutation_radius = 3
+            mutation_rate = 0.02
+
         pool = pool.next_gen()
 
     file_name = "generation_" + \

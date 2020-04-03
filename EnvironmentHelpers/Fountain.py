@@ -54,28 +54,29 @@ class Fountain:
         title.write('CPSC-565: Assignment 3', font=style, align='center')
         style = ('Courier', 13)
         title.setpos(0, 280)
-        title.write('By: James Peralta, Albert Choi, Nathaniel Habtegergesa', font=style, align='center')
+        title.write('By: James Peralta, Albert Choi, Nathaniel Habtegergesa',
+                    font=style, align='center')
 
         # Create earning turtle
         self.earnings = turtle.Turtle()
         self.earnings.penup()
         self.earnings.hideturtle()
         self.earnings.speed(10)
-        self.earnings.setpos(0, -280)
+        self.earnings.setpos(0, -300)
 
         # Create moves left turtle
         self.moves_left = turtle.Turtle()
         self.moves_left.penup()
         self.moves_left.hideturtle()
         self.moves_left.speed(10)
-        self.moves_left.setpos(0, -310)
+        self.moves_left.setpos(0, -340)
 
         # Create clearer turtle
         self.clearer = turtle.Turtle()
         self.clearer.penup()
         self.clearer.hideturtle()
         self.clearer.speed(10)
-        self.clearer.setpos(0, -310)
+        self.clearer.setpos(0, -350)
 
         self.draw_earnings(0)
         self.draw_energy(0)
@@ -102,18 +103,20 @@ class Fountain:
     def draw_earnings(self, earnings_val):
         style = ('Courier', 26)
         self.earnings.color('black')
-        self.earnings.write('Earnings: {}'.format(earnings_val), font=style, align='center')
+        self.earnings.write('Earnings: {}'.format(
+            earnings_val), font=style, align='center')
 
     def draw_energy(self, energy_val):
         style = ('Courier', 26)
         self.moves_left.color('black')
-        self.moves_left.write('Energy left: {}'.format(MAX_MOVES - energy_val), font=style, align='center')
+        self.moves_left.write('Energy left: {}'.format(
+            MAX_MOVES - energy_val), font=style, align='center')
 
     def clear_board(self):
         self.clearer.setpos(-150, -250)
         self.clearer.fillcolor(SCREEN_COLOR)
         self.clearer.begin_fill()
         for i in range(4):
-            self.clearer.forward(300)
+            self.clearer.forward(500)
             self.clearer.right(90)
         self.clearer.end_fill()

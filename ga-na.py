@@ -278,6 +278,13 @@ def main():
     pool = GenePool([], structures_per_generation, env)
     for gen in range(n_generations):
         print("Generation: ", gen, "  best earnings score: ", pool.best.earnings)
+        global mutation_rate
+        if(pool.best.earnings > 400):
+            mutation_rate = 0.01
+        elif(pool.best.earnings > 300):
+            mutation_rate = 0.03
+        else:
+            mutation_rate = 0.05
         pool = pool.next_gen()
 
     file_name = "generation_" + \

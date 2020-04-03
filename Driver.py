@@ -22,7 +22,7 @@ def main():
     fountain.generate_fountain()
 
     # Spawn Tilly
-    tilly = Tilly(fountain)
+    tilly = Tilly(fountain, moves)
     tilly.spawn_tilly()
 
     for i in range(max_moves):
@@ -36,6 +36,9 @@ def main():
 
 if(len(sys.argv) > 1):
     file_name = sys.argv[1]
+else:
+    print("Add a Tilly moveset file to the first argument")
+    # exit(1)
 
 
 main()
