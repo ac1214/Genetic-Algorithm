@@ -15,7 +15,6 @@ def main():
         line = file.readline()
 
         moves = list(map(int, line.split(", ")))
-    print(moves)
 
     # Generate the fountain
     fountain = Fountain()
@@ -26,8 +25,10 @@ def main():
     tilly.spawn_tilly()
 
     for i in range(max_moves):
-        time.sleep(0.5)
         tilly.make_move()
+        tilly.fountain.clear_board()
+        tilly.update_earnings()
+        tilly.update_energy(i)
 
     turtle.mainloop()
 
