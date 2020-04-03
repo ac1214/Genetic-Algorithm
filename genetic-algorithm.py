@@ -1,17 +1,21 @@
 # ga.py
-# This is the genetic algortihm for Tilly
+# This is the genetic algortihm for tilly
 # James Peralta, Albert Choi, Nathaniel Habtegergesa
 # March 2020
 import random
 import copy
+from graphing import *
 
-# Global Variables
-mutation_rate = 0.05
-mutation_radius = 5
-roulette_factor = 0.8
-n_generations = 1000
-structures_per_generation = 500
+# Tunable parameters
+MUTATION_RATE = 0.05
+MUTATION_RADIUS = 5
+ROULETTE_FACTOR = 0.9
+N_GENERATIONS = 500
+STRUCTURES_PER_GENERATION = 2000
+FOUNTAINS_PER_GENERATION = 5
+CROSSOVER_POINTS = 5
 
+# GENOME
 MAX_ENERGY = 200
 GENOME_LENGTH = 243
 
@@ -77,8 +81,7 @@ class Environment:
         row, col = 0, 0
 
         average_earnings = []
-        # Evaluate on 10 different fountains
-        for i in range(0, 5):
+        for i in range(0, FOUNTAINS_PER_GENERATION):
             earnings = 0
             temp_world = copy.deepcopy(self.generate_new_world())
             for i in range(MAX_ENERGY):
@@ -140,12 +143,11 @@ class Environment:
                                 col = LEFT_EDGE
                         else:
                             col += 1
-                            if(col > RIGHT_EDGE):
+                            if col > RIGHT_EDGE:
                                 earnings -= FIVE_DOLLARS
                                 col = RIGHT_EDGE
 
             average_earnings.append(earnings)
-        # print(average_earnings)
 
         struct.earnings = sum(average_earnings) / len(average_earnings)
 
@@ -155,7 +157,7 @@ class Structure:
         self.earnings = 0
         self.genome = actions[:]
 
-        if(self.genome == []):
+        if self.genome == []:
             self.genome = list()
             for i in range(GENOME_LENGTH):
                 self.genome.append(random.randint(0, 6))
@@ -163,27 +165,7 @@ class Structure:
     def get_move(self, index):
         return self.genome[index]
 
-    def crossover(self, mate):
-        child_genome = []
-
-        for i in range(0, len(self.genome)):
-            choice = random.choice([True, False])
-            if(choice):
-                child_genome.append(self.genome[i])
-            else:
-                child_genome.append(mate.genome[i])
-
-        # Might implement two point crossover here
-        # crossover_point = random.randint(0, len(self.genome))
-        # for i in range(0, crossover_point):
-        #     child_genome.append(self.genome[i])
-
-        # for i in range(crossover_point, len(self.genome)):
-        #     child_genome.append(mate.genome[i])
-
-        return Structure(child_genome)
-
-    def n_point_crossover(self, mate, n=2):
+    def n_point_crossover(self, mate, n=CROSSOVER_POINTS):
         child_genome = []
         crossover_points = random.sample(range(0, GENOME_LENGTH), n)
         crossover_points.sort()
@@ -206,26 +188,22 @@ class Structure:
         for i in range(0, GENOME_LENGTH):
             val = random.uniform(0, 1)
 
-            if val < mutation_rate:
-                self.genome[i] = random.choice([0, 1, 2, 3, 4, 5, 6])
+            if val < MUTATION_RATE:
+                mutation = random.randint(1, MUTATION_RADIUS)
 
-                # mutation = random.randint(1, mutation_radius)
+                choice = random.choice([True, False])
+                if choice:
+                    next_action = self.genome[i] + mutation
+                    if next_action > 6:
+                        next_action = 6
 
-                # choice = random.choice([True, False])
-                # if(choice):
-                #     self.genome[i] = (self.genome[i] + mutation) % 7
-                # else:
-                #     self.genome[i] = (self.genome[i] - mutation) % 7
+                    self.genome[i] = next_action
+                else:
+                    next_action = self.genome[i] - mutation
+                    if next_action < 0:
+                        next_action = 0
 
-                # new_point = random.randint(
-                #     current_value - mutation_radius, current_value + mutation_radius)
-
-                # if new_point < 0:
-                #     self.genome[i] = 0
-                # elif new_point > 6:
-                #     self.genome[i] = 6
-                # else:
-                #     self.genome[i] = new_point
+                    self.genome[i] = next_action
 
 
 class GenePool:
@@ -242,7 +220,7 @@ class GenePool:
         # Generate probabilities for picking Genomes
         self.weights = [1]
         for i in range(1, self.pool_size):
-            self.weights.append(self.weights[i - 1] * roulette_factor)
+            self.weights.append(self.weights[i - 1] * ROULETTE_FACTOR)
 
         self.best = self.test()
 
@@ -257,37 +235,48 @@ class GenePool:
         return self.pool[0]
 
     def next_gen(self):
-        scores = []
         new_pool = []
         for _ in range(self.pool_size):
             parents = self.select_structures()
             parent_zero = copy.deepcopy(parents[0])
             parent_one = copy.deepcopy(parents[1])
-            child = parent_zero.n_point_crossover(parent_one, 1)
+            child = parent_zero.n_point_crossover(parent_one, CROSSOVER_POINTS)
             child.mutate()
 
-            scores.append(parent_zero.earnings)
             new_pool.append(child)
 
-        new_env = Environment()
-        return GenePool(new_pool, self.pool_size, new_env)
+        return GenePool(new_pool, self.pool_size, self.environment)
 
 
 def main():
+    global MUTATION_RADIUS
+    global MUTATION_RATE
+    global ROULETTE_FACTOR
+    graph = Graph()
     env = Environment()
-    pool = GenePool([], structures_per_generation, env)
-    for gen in range(n_generations):
+    pool = GenePool([], STRUCTURES_PER_GENERATION, env)
+
+    first_checkpoint = False
+    for gen in range(N_GENERATIONS):
         print("Generation: ", gen, "  best earnings score: ", pool.best.earnings)
+        graph.addNewPoint(gen, pool.best.earnings)
+        if pool.best.earnings > 450 and first_checkpoint is False:
+            MUTATION_RATE = 0.03
+            MUTATION_RADIUS = 2
+            first_checkpoint = True
+
         pool = pool.next_gen()
 
     file_name = "generation_" + \
-        str(n_generations) + "_fitness_score_" + \
+        str(N_GENERATIONS) + "_fitness_score_" + \
         str(pool.best.earnings) + ".txt"
 
-    #file = open(file_name, "w")
+    file = open(file_name, "w")
     array = " ".join(map(str, pool.best.genome))
-    # file.write(array)
-    # file.close()
+    file.write(array)
+    file.close()
+    print("wrote file: ", file_name, " Click graph to exit")
+    graph.click_to_exit()
 
 
 main()
