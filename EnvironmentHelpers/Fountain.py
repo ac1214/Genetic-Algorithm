@@ -113,7 +113,7 @@ class Fountain:
             MAX_MOVES - energy_val), font=style, align='center')
 
     def clear_board(self):
-        self.clearer.setpos(-150, -250)
+        self.clearer.setpos(-200, -250)
         self.clearer.fillcolor(SCREEN_COLOR)
         self.clearer.begin_fill()
         for i in range(4):

@@ -15,7 +15,7 @@ def main():
         line = file.readline()
 
         moves = list(map(int, line.split(" ")))
-    print(moves)
+    print("Loaded Tilly: ", moves)
 
     # Generate the fountain
     fountain = Fountain()
@@ -25,7 +25,7 @@ def main():
     tilly = Tilly(fountain, moves)
     tilly.spawn_tilly()
 
-    for i in range(max_moves):
+    for i in range(1, max_moves + 1):
         tilly.make_move()
         tilly.fountain.clear_board()
         tilly.update_earnings()
@@ -37,8 +37,8 @@ def main():
 if(len(sys.argv) > 1):
     file_name = sys.argv[1]
 else:
-    print("Add a Tilly moveset file to the first argument")
-    # exit(1)
+    print("Add a Tilly moveset file as the first argument")
+    exit(1)
 
 
 main()
