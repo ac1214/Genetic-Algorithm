@@ -9,10 +9,11 @@ import copy
 
 # Global Variables
 mutationRate = 0.1
-mutationRadius = 5
+mutationRadius = 4
 nGenerations = 500
 rouletteFactor = 0.6
 structures_per_generation = 1000
+fountains_per_generation = 10
 
 
 class Enviroment:
@@ -52,78 +53,79 @@ class Enviroment:
 
     def evaluate(self, struct):
         # iterate over 200 energy
-        tempWorld = copy.deepcopy(self.world)
 
         x, y = 0, 0
 
         struct.earnings = 0
-        # pheno = self.configure_phenotype(
-        #     self.initalize_phenotype(), struct.genome)
+        for i in range(10):
+            self.generate_new_world()
+            tempWorld = copy.deepcopy(self.world)
 
-        for i in range(200):
-            # action = struct.phenotype(self.get_neighbors(x, y, tempWorld))
-            action = struct.getMove(self.getIndex(x, y, tempWorld))
-            # print(struct.genome)
-            # print("x: ", x, " y: ",  y, " action ", action)
-            # neigh = get_neighbors(x, y, tempWorld)
-            # action = getAction(neigh)
+            for i in range(200):
+                # action = struct.phenotype(self.get_neighbors(x, y, tempWorld))
+                action = struct.getMove(self.getIndex(x, y, tempWorld))
+                # print(struct.genome)
+                # print("x: ", x, " y: ",  y, " action ", action)
+                # neigh = get_neighbors(x, y, tempWorld)
+                # action = getAction(neigh)
 
-            if action == 0:
-                x -= 1
-                if(x < 0):
-                    struct.earnings -= 5  # remove magic numbers
-                    x = 0
-            elif action == 1:
-                x += 1
-                if(x > 9):
-                    struct.earnings -= 5
-                    x = 9
-            elif action == 2:
-                y -= 1
-                if(y < 0):
-                    struct.earnings -= 5
-                    y = 0
-            elif action == 3:
-                y += 1
-                if(y > 9):
-                    struct.earnings -= 5
-                    y = 9
-            elif action == 4:
-                if(tempWorld[x][y] == 0):
-                    struct.earnings -= 1
-                else:
-                    tempWorld[x][y] = 0
-                    struct.earnings += 10
-            elif action == 5:
-                pass
-            else:
-                choice = random.choice([True, False])
-                if(choice):
-                    choice = random.choice([True, False])
-                    if(choice):
-                        x -= 1
-                        if(x < 0):
-                            struct.earnings -= 5  # remove magic numbers
-                            x = 0
+                if action == 0:
+                    x -= 1
+                    if(x < 0):
+                        struct.earnings -= 5  # remove magic numbers
+                        x = 0
+                elif action == 1:
+                    x += 1
+                    if(x > 9):
+                        struct.earnings -= 5
+                        x = 9
+                elif action == 2:
+                    y -= 1
+                    if(y < 0):
+                        struct.earnings -= 5
+                        y = 0
+                elif action == 3:
+                    y += 1
+                    if(y > 9):
+                        struct.earnings -= 5
+                        y = 9
+                elif action == 4:
+                    if(tempWorld[x][y] == 0):
+                        struct.earnings -= 1
                     else:
-                        x += 1
-                        if(x > 9):
-                            struct.earnings -= 5
-                            x = 9
+                        tempWorld[x][y] = 0
+                        struct.earnings += 10
+                elif action == 5:
+                    pass
                 else:
                     choice = random.choice([True, False])
                     if(choice):
-                        y -= 1
-                        if(y < 0):
-                            struct.earnings -= 5  # remove magic numbers
-                            y = 0
+                        choice = random.choice([True, False])
+                        if(choice):
+                            x -= 1
+                            if(x < 0):
+                                struct.earnings -= 5  # remove magic numbers
+                                x = 0
+                        else:
+                            x += 1
+                            if(x > 9):
+                                struct.earnings -= 5
+                                x = 9
                     else:
-                        y += 1
-                        if(y > 9):
-                            struct.earnings -= 5
-                            y = 9
+                        choice = random.choice([True, False])
+                        if(choice):
+                            y -= 1
+                            if(y < 0):
+                                struct.earnings -= 5  # remove magic numbers
+                                y = 0
+                        else:
+                            y += 1
+                            if(y > 9):
+                                struct.earnings -= 5
+                                y = 9
+        struct.earnings /= 10
 
-            # print("action: ", action, "", "Earnings", struct.earnings)
+        # print("action: ", action, "", "Earnings", struct.earnings)
         # print(moves)
 
 
@@ -195,7 +197,6 @@ class GenePool:
             child.mutate()
 
             newPool.append(child)
-        self.environment.generate_new_world()
         return GenePool(newPool, self.poolSize, self.environment)
 
 
