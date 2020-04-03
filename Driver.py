@@ -34,7 +34,7 @@ def main():
     turtle.mainloop()
 
 
-if(len(sys.argv) > 1):
+if len(sys.argv) > 1:
     file_name = sys.argv[1]
 else:
     print("Add a Tilly moveset file as the first argument")

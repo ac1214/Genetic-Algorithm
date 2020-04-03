@@ -191,10 +191,18 @@ class Structure:
                 mutation = random.randint(1, MUTATION_RADIUS)
 
                 choice = random.choice([True, False])
-                if(choice):
-                    self.genome[i] = (self.genome[i] + mutation) % 7
+                if choice:
+                    next_action = self.genome[i] + mutation
+                    if next_action > 6:
+                        next_action = 6
+
+                    self.genome[i] = next_action
                 else:
-                    self.genome[i] = (self.genome[i] - mutation) % 7
+                    next_action = self.genome[i] - mutation
+                    if next_action < 0:
+                        next_action = 0
+
+                    self.genome[i] = next_action
 
 
 class GenePool:
@@ -245,18 +253,26 @@ def main():
     global ROULETTE_FACTOR
     env = Environment()
     pool = GenePool([], STRUCTURES_PER_GENERATION, env)
+
+    first_checkpoint = False
+    second_checkpoint = False
+    third_checkpoint = False
     for gen in range(N_GENERATIONS):
         print("Generation: ", gen, "  best earnings score: ", pool.best.earnings)
 
-        if pool.best.earnings > 485:
-            MUTATION_RADIUS = 2
+        if pool.best.earnings > 485 and third_checkpoint is False:
+            MUTATION_RADIUS = 1
             MUTATION_RATE = 0.02
             ROULETTE_FACTOR = 0.5
-        elif pool.best.earnings > 450:
+            third_checkpoint = True
+        elif pool.best.earnings > 450 and second_checkpoint is False:
             MUTATION_RATE = 0.03
-        elif pool.best.earnings > 400:
+            MUTATION_RADIUS = 2
+            second_checkpoint = True
+        elif pool.best.earnings > 400 and first_checkpoint is False:
             MUTATION_RATE = 0.04
             MUTATION_RADIUS = 3
+            first_checkpoint = True
 
         pool = pool.next_gen()
 
