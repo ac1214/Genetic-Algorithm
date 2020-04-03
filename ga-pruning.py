@@ -6,11 +6,11 @@ import random
 import copy
 
 # Global Variables
-mutation_rate = 0.05
+mutation_rate = 0.03
 mutation_radius = 5
-roulette_factor = 0.8
+roulette_factor = 0.90
 n_generations = 500
-structures_per_generation = 500
+structures_per_generation = 1000
 
 MAX_ENERGY = 200
 GENOME_LENGTH = 243
@@ -144,9 +144,9 @@ class Environment:
                                 earnings -= FIVE_DOLLARS
                                 col = RIGHT_EDGE
 
-            average_earnings.append(earnings)
+                average_earnings.append(earnings)
 
-        struct.earnings = sum(average_earnings) / len(average_earnings)
+        struct.earnings = int(sum(average_earnings) / len(average_earnings))
 
 
 class Structure:
@@ -165,39 +165,13 @@ class Structure:
     def crossover(self, mate):
         child_genome = []
 
-        for i in range(0, len(self.genome)):
-            choice = random.choice([True, False])
-            if(choice):
-                child_genome.append(self.genome[i])
-            else:
-                child_genome.append(mate.genome[i])
-
         # Might implement two point crossover here
-        # crossover_point = random.randint(0, len(self.genome))
-        # for i in range(0, crossover_point):
-        #     child_genome.append(self.genome[i])
+        crossover_point = random.randint(0, len(self.genome))
+        for i in range(0, crossover_point):
+            child_genome.append(self.genome[i])
 
-        # for i in range(crossover_point, len(self.genome)):
-        #     child_genome.append(mate.genome[i])
-
-        return Structure(child_genome)
-
-    def n_point_crossover(self, mate, n=2):
-        child_genome = []
-        crossover_points = random.sample(range(0, GENOME_LENGTH), n)
-        crossover_points.sort()
-
-        on_parent = True
-        crossover_index = 0
-        for i in range(0, GENOME_LENGTH):
-            if i == crossover_points[crossover_index]:
-                crossover_index = (crossover_index + 1) % len(crossover_points)
-                on_parent = not on_parent
-
-            if on_parent:
-                child_genome.append(self.genome[i])
-            else:
-                child_genome.append(mate.genome[i])
+        for i in range(crossover_point, len(self.genome)):
+            child_genome.append(mate.genome[i])
 
         return Structure(child_genome)
 
@@ -208,16 +182,8 @@ class Structure:
             if val < mutation_rate:
                 current_value = self.genome[i]
 
-                mutation = random.randint(1, mutation_radius)
-
-                choice = random.choice([True, False])
-                if(choice):
-                    self.genome[i] = (self.genome[i] + mutation) % 7
-                else:
-                    self.genome[i] = (self.genome[i] - mutation) % 7
-
-                # new_point = random.randint(
-                #     current_value - mutation_radius, current_value + mutation_radius)
+                new_point = random.randint(
+                    current_value - mutation_radius, current_value + mutation_radius)
 
                 # if new_point < 0:
                 #     self.genome[i] = 0
@@ -225,6 +191,8 @@ class Structure:
                 #     self.genome[i] = 6
                 # else:
                 #     self.genome[i] = new_point
+
+                self.genome[i] = new_point % 7
 
 
 class GenePool:
@@ -262,7 +230,7 @@ class GenePool:
             parents = self.select_structures()
             parent_zero = copy.deepcopy(parents[0])
             parent_one = copy.deepcopy(parents[1])
-            child = parent_zero.n_point_crossover(parent_one, 1)
+            child = parent_zero.crossover(parent_one)
             child.mutate()
 
             scores.append(parent_zero.earnings)

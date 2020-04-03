@@ -8,7 +8,7 @@ import copy
 # Global Variables
 mutation_rate = 0.05
 mutation_radius = 5
-roulette_factor = 0.8
+roulette_factor = 0.9
 n_generations = 500
 structures_per_generation = 500
 
@@ -182,25 +182,6 @@ class Structure:
 
         return Structure(child_genome)
 
-    def n_point_crossover(self, mate, n=2):
-        child_genome = []
-        crossover_points = random.sample(range(0, GENOME_LENGTH), n)
-        crossover_points.sort()
-
-        on_parent = True
-        crossover_index = 0
-        for i in range(0, GENOME_LENGTH):
-            if i == crossover_points[crossover_index]:
-                crossover_index = (crossover_index + 1) % len(crossover_points)
-                on_parent = not on_parent
-
-            if on_parent:
-                child_genome.append(self.genome[i])
-            else:
-                child_genome.append(mate.genome[i])
-
-        return Structure(child_genome)
-
     def mutate(self):
         for i in range(0, GENOME_LENGTH):
             val = random.uniform(0, 1)
@@ -262,7 +243,7 @@ class GenePool:
             parents = self.select_structures()
             parent_zero = copy.deepcopy(parents[0])
             parent_one = copy.deepcopy(parents[1])
-            child = parent_zero.n_point_crossover(parent_one, 1)
+            child = parent_zero.crossover(parent_one)
             child.mutate()
 
             scores.append(parent_zero.earnings)

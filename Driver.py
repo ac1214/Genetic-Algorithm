@@ -14,7 +14,7 @@ def main():
         file = open(file_name, "r")
         line = file.readline()
 
-        moves = list(map(int, line.split(", ")))
+        moves = list(map(int, line.split(" ")))
     print(moves)
 
     # Generate the fountain

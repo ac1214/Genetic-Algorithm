@@ -4,16 +4,18 @@
 # March 2020
 import random
 import copy
+import numpy as np
+import random
 
 # Global Variables
-mutation_rate = 0.05
+mutation_rate = 0.06
 mutation_radius = 5
-roulette_factor = 0.8
+roulette_factor = 0.9
 n_generations = 500
 structures_per_generation = 500
 
 MAX_ENERGY = 200
-GENOME_LENGTH = 243
+GENOME_LENGTH = 144
 
 # State configurations
 UNBROKEN = 0
@@ -40,6 +42,46 @@ MAKE_FIX = 4
 DO_NOTHING = 5
 MOVE_RANDOM = 6
 
+# Helper functions
+
+
+def remove_oob_below(arr):
+    # Tilly	will never be on a tile that is over the edge of the grid
+    below_number = arr[4]
+
+    if below_number != 2:
+        return True
+    else:
+        return False
+
+
+def remove_more_than_two_oob(arr):
+    two_occur = arr.count(2)
+    if two_occur <= 2:
+        return True
+    else:
+        return False
+
+
+def initalize_phenotype():
+    comb_arr = []
+    for i in range(0, 5):
+        comb_arr.append(np.arange(3))
+
+    all_combs = list(np.array(np.meshgrid(
+        comb_arr[0], comb_arr[1], comb_arr[2], comb_arr[3], comb_arr[4])).T.reshape(-1, 5))
+    all_combs = list(map(lambda x: list(x), all_combs))
+    all_combs = list(filter(lambda x: remove_oob_below(x), all_combs))
+    all_combs = list(
+        filter(lambda x: remove_more_than_two_oob(x), all_combs))
+    all_combs = list(map(lambda x: "".join(map(str, x)), all_combs))
+    action_map = dict.fromkeys(all_combs)
+
+    return action_map
+
+
+phenotype_master = initalize_phenotype()
+
 
 class Environment:
     def __init__(self):
@@ -55,7 +97,7 @@ class Environment:
 
         return new_world
 
-    def get_index(self, x, y, world):
+    def get_neighbors(self, x, y, world):
         north = OOB if x == TOP_EDGE else world[x - 1][y]
         east = OOB if y == RIGHT_EDGE else world[x][y + 1]
         south = OOB if x == BOTTOM_EDGE else world[x + 1][y]
@@ -66,23 +108,22 @@ class Environment:
         #  Generates a bit string containing the index of
         #  the action in the genome depending on the current
         #  state of this structures neighbors
-        state = north * (3**4)
-        state += east * (3**3)
-        state += south * (3**2)
-        state += west * 3
-        state += center
-        return state  # Number between 0 and 242
+        neighbors = "".join([str(north), str(east), str(
+            south), str(west), str(center)])
+
+        return neighbors  # Number between 0 and 242
 
     def evaluate(self, struct):
         row, col = 0, 0
 
         average_earnings = []
         # Evaluate on 10 different fountains
-        for i in range(0, 5):
+        for i in range(0, 10):
             earnings = 0
             temp_world = copy.deepcopy(self.generate_new_world())
             for i in range(MAX_ENERGY):
-                action = struct.get_move(self.get_index(row, col, temp_world))
+                action = struct.get_move(
+                    self.get_neighbors(row, col, temp_world))
 
                 if action == MOVE_UP:
                     row -= 1
@@ -146,7 +187,7 @@ class Environment:
 
             average_earnings.append(earnings)
 
-        struct.earnings = sum(average_earnings) / len(average_earnings)
+        struct.earnings = int(sum(average_earnings) / len(average_earnings))
 
 
 class Structure:
@@ -159,26 +200,21 @@ class Structure:
             for i in range(GENOME_LENGTH):
                 self.genome.append(random.randint(0, 6))
 
-    def get_move(self, index):
-        return self.genome[index]
+        self.phenotype = self.configure_phenotype(
+            phenotype_master.copy(), self.genome)
 
-    def crossover(self, mate):
+    def get_move(self, neighbors):
+        return self.phenotype[neighbors]
+
+    def uniform_crossover(self, mate):
         child_genome = []
 
-        for i in range(0, len(self.genome)):
+        for i in range(0, GENOME_LENGTH):
             choice = random.choice([True, False])
             if(choice):
                 child_genome.append(self.genome[i])
             else:
                 child_genome.append(mate.genome[i])
-
-        # Might implement two point crossover here
-        # crossover_point = random.randint(0, len(self.genome))
-        # for i in range(0, crossover_point):
-        #     child_genome.append(self.genome[i])
-
-        # for i in range(crossover_point, len(self.genome)):
-        #     child_genome.append(mate.genome[i])
 
         return Structure(child_genome)
 
@@ -216,15 +252,11 @@ class Structure:
                 else:
                     self.genome[i] = (self.genome[i] - mutation) % 7
 
-                # new_point = random.randint(
-                #     current_value - mutation_radius, current_value + mutation_radius)
+    def configure_phenotype(self, phenotype, genome):
+        for index, state in enumerate(phenotype.keys()):
+            phenotype[state] = genome[index]
 
-                # if new_point < 0:
-                #     self.genome[i] = 0
-                # elif new_point > 6:
-                #     self.genome[i] = 6
-                # else:
-                #     self.genome[i] = new_point
+        return phenotype
 
 
 class GenePool:
@@ -262,7 +294,7 @@ class GenePool:
             parents = self.select_structures()
             parent_zero = copy.deepcopy(parents[0])
             parent_one = copy.deepcopy(parents[1])
-            child = parent_zero.n_point_crossover(parent_one, 1)
+            child = parent_zero.n_point_crossover(parent_one)
             child.mutate()
 
             scores.append(parent_zero.earnings)
