@@ -26,8 +26,10 @@ def main():
     tilly.spawn_tilly()
 
     for i in range(max_moves):
-        time.sleep(0.5)
         tilly.make_move()
+        tilly.fountain.clear_board()
+        tilly.update_earnings()
+        tilly.update_energy(i)
 
     turtle.mainloop()
 

@@ -8,11 +8,12 @@ import numpy as np
 import random
 
 # Global Variables
-mutation_rate = 0.06
-mutation_radius = 5
+mutation_rate = 0.07
+mutation_radius = 3
 roulette_factor = 0.9
 n_generations = 500
 structures_per_generation = 500
+fountains_per_generation = 5
 
 MAX_ENERGY = 200
 GENOME_LENGTH = 144
@@ -118,7 +119,7 @@ class Environment:
 
         average_earnings = []
         # Evaluate on 10 different fountains
-        for i in range(0, 10):
+        for i in range(0, fountains_per_generation):
             earnings = 0
             temp_world = copy.deepcopy(self.generate_new_world())
             for i in range(MAX_ENERGY):

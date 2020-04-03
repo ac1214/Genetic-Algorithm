@@ -8,8 +8,9 @@ state_to_int = {
     "cracked": 1
 }
 
-BEST_ARRAY = [6, 4, 5, 2, 4, 5, 3, 4, 5, 1, 4, 5, 1, 4, 5, 1, 4, 5, 0, 4, 5, 2, 4, 5, 3, 4, 5, 3, 4, 5, 3, 4, 5, 3, 4, 5, 3, 4, 5, 2, 4, 5, 3, 4, 5, 3, 4, 5, 2, 4, 5, 3, 4, 5, 2, 4, 5, 2, 4, 5, 5, 4, 5, 1, 4, 5, 1, 4, 5, 5, 4, 5, 2, 4, 5, 2, 4, 5, 5, 5, 5, 0, 4, 5, 0, 4, 5, 0, 4, 5, 0, 4, 5, 0, 4, 5, 0, 4, 5, 0, 4, 5, 2, 4, 5, 0, 4, 5, 0, 4, 5, 1, 4, 5, 0, 4, 5, 1, 4,
-              5, 6, 4, 5, 1, 4, 5, 0, 4, 5, 0, 4, 5, 0, 4, 5, 0, 4, 5, 0, 4, 5, 5, 4, 5, 0, 4, 5, 2, 4, 5, 5, 4, 5, 0, 4, 5, 2, 4, 5, 5, 5, 5, 1, 4, 5, 2, 4, 5, 1, 4, 5, 1, 4, 5, 1, 4, 5, 1, 4, 5, 5, 4, 5, 5, 4, 5, 5, 5, 5, 3, 4, 5, 2, 4, 5, 3, 4, 5, 3, 4, 5, 1, 4, 5, 1, 4, 5, 5, 4, 5, 5, 4, 5, 5, 5, 5, 2, 4, 5, 2, 4, 5, 5, 5, 5, 1, 4, 5, 1, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
+BEST_ARRAY = [6, 4, 2, 2, 4, 0, 3, 4, 5, 1, 4, 0, 2, 4, 2, 6, 4, 2, 0, 4, 6, 0, 6, 6, 4, 5, 2, 6, 4, 2, 2, 4, 4, 1, 1, 1, 1, 4, 1, 6, 6, 3, 5, 0, 0, 0, 4, 5, 0, 3, 0, 4, 2, 4, 2, 1, 0, 4, 4, 1, 2, 5, 6, 2, 6, 3, 2, 4, 2, 0, 5, 6, 3, 4, 2, 6, 5, 5, 2, 2, 0, 0, 4, 6, 6, 4, 0, 3, 4, 0, 0, 4, 4, 3, 4, 3, 0, 1, 3, 2, 4, 4, 0, 4, 0, 2, 1, 6, 0, 4, 0, 6, 4, 0, 3, 1, 0, 0, 1,
+              6, 5, 6, 4, 3, 4, 5, 2, 5, 6, 5, 2, 2, 5, 1, 2, 6, 2, 0, 1, 1, 3, 3, 3, 5, 6, 4, 2, 5, 6, 0, 2, 2, 1, 3, 0, 3, 4, 2, 0, 6, 3, 4, 1, 4, 2, 1, 4, 6, 1, 3, 4, 1, 5, 6, 5, 4, 6, 3, 3, 5, 2, 5, 3, 5, 3, 5, 2, 5, 2, 1, 6, 4, 1, 4, 6, 4, 6, 3, 1, 0, 6, 4, 2, 5, 6, 1, 3, 6, 2, 2, 5, 6, 1, 4, 5, 6, 6, 1, 0, 2, 6, 5, 3, 1, 5, 5, 4, 3, 1, 3, 1, 4, 3, 6, 4, 0, 4, 0, 4, 6, 4, 0, 6]
+
 MOVE_UP = 0
 MOVE_DOWN = 1
 MOVE_LEFT = 2
@@ -17,6 +18,11 @@ MOVE_RIGHT = 3
 MAKE_FIX = 4
 DO_NOTHING = 5
 MOVE_RANDOM = 6
+
+# Money to be earned
+ONE_DOLLAR = 1
+FIVE_DOLLARS = 5
+TEN_DOLLARS = 10
 
 
 class Tilly:
@@ -32,6 +38,7 @@ class Tilly:
         self.fountain = fountain
         self.current_x = 0
         self.current_y = 0
+        self.earnings = 0
 
         # Tilly will now listen for events
         turtle.onkeypress(self.move_up, 'Up')
@@ -48,45 +55,40 @@ class Tilly:
         return self.round_int(int(current_pos[0])), self.round_int(int(current_pos[1]))
 
     # Actions listeners
-    # TODO: Track when it goes OOB and do a noop
     def spawn_tilly(self):
         self.tilly.setpos(TOP_LEFT)
 
     def move_up(self):
-        self.current_x -= 1
-        if(self.current_x < 0):
-            self.current_x = 0
-        else:
-            self.tilly.setheading(90)
-            self.tilly.forward(TILE_LENGTH)
+        last_pos = self.get_current_pos()
+        self.tilly.setheading(90)
+        self.tilly.forward(TILE_LENGTH)
+
+        if self.check_out_of_bounds() is False:
+            self.tilly.setpos(last_pos)
 
     def move_down(self):
-        self.current_x += 1
+        last_pos = self.get_current_pos()
+        self.tilly.setheading(270)
+        self.tilly.forward(TILE_LENGTH)
 
-        if(self.current_x > 9):
-            # TODO: Subtract from earnings
-            self.current_x = 9
-        else:
-            self.tilly.setheading(270)
-            self.tilly.forward(TILE_LENGTH)
+        if self.check_out_of_bounds() is False:
+            self.tilly.setpos(last_pos)
 
     def move_left(self):
-        self.current_y -= 1
+        last_pos = self.get_current_pos()
+        self.tilly.setheading(180)
+        self.tilly.forward(TILE_LENGTH)
 
-        if(self.current_y < 0):
-            self.current_y = 0
-        else:
-            self.tilly.setheading(180)
-            self.tilly.forward(TILE_LENGTH)
+        if self.check_out_of_bounds() is False:
+            self.tilly.setpos(last_pos)
 
     def move_right(self):
-        self.current_y += 1
+        last_pos = self.get_current_pos()
+        self.tilly.setheading(0)
+        self.tilly.forward(TILE_LENGTH)
 
-        if(self.current_y > 9):
-            self.current_y = 0
-        else:
-            self.tilly.setheading(0)
-            self.tilly.forward(TILE_LENGTH)
+        if self.check_out_of_bounds() is False:
+            self.tilly.setpos(last_pos)
 
     def fix_current_tile(self):
         current_x, current_y = self.get_current_pos()
@@ -99,12 +101,15 @@ class Tilly:
 
         tile_type = tile.get_tile_type()
         if tile_type is CRACKED_TILE:
+            self.update_earning_value(self.earnings + TEN_DOLLARS)
             tile.fix_tile()
+        else:
+            self.update_earning_value(self.earnings - ONE_DOLLAR)
 
     def make_move(self):
+        self.last_pos = self.get_current_pos()
         move_to_make = self.get_nearest_neighbors()
 
-        print(move_to_make)
         if move_to_make == MOVE_UP:
             self.move_up()
         elif move_to_make == MOVE_DOWN:
@@ -131,7 +136,6 @@ class Tilly:
         """
         current_x, current_y = self.get_current_pos()
 
-        neighor_arr = []
         # North
         try:
             tile_type = self.fountain.get_tile(
@@ -178,8 +182,27 @@ class Tilly:
         temp += west * 3
         temp += center
 
-        # print("".join(map(str, [north, east, south, west, center])))
         return BEST_ARRAY[temp]
 
     def round_int(self, number, base=25):
         return base * round(number / base)
+
+    def check_out_of_bounds(self):
+        current_x, current_y = self.get_current_pos()
+        try:
+            self.fountain.get_tile(
+                current_x, current_y).get_tile_type()
+            return True
+        except KeyError as e:
+            # If the user falls out of bounds
+            self.update_earning_value(self.earnings - FIVE_DOLLARS)
+            return False
+
+    def update_earning_value(self, new_value):
+        self.earnings = new_value
+
+    def update_earnings(self):
+        self.fountain.draw_earnings(self.earnings)
+
+    def update_energy(self, energy):
+        self.fountain.draw_energy(energy)
